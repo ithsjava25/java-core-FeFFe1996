@@ -5,10 +5,7 @@ import org.junit.jupiter.api.*;
 import java.lang.reflect.Constructor;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.UUID;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -137,7 +134,7 @@ class BasicTest {
             @Test
             @DisplayName("✅ should be created by calling the 'getInstance' factory method")
             void should_beCreated_when_usingFactoryMethod() {
-                Warehouse defaultWarehouse = Warehouse.getInstance();
+                Warehouse defaultWarehouse = Warehouse.getInstance("TestWarehouse");
                 assertThat(defaultWarehouse).isNotNull();
             }
 

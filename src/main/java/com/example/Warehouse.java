@@ -3,17 +3,57 @@ package com.example;
 import java.math.BigDecimal;
 
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class Warehouse {
     private static Warehouse warehouse = new Warehouse();
     private Warehouse() {}
 
-    public static Warehouse getInstance(String warehouseName) {
+    public static Warehouse getInstance(String name) {
         if (warehouse == null) {
             warehouse = new Warehouse();
         }
-        return warehouse = new Warehouse(warehouseName);
+        return warehouse = new Warehouse(name);
+    }
+
+    public Product addProduct(Product product) {
+        if (product == null) {
+            throw new NullPointerException("Product cannot be null");
+        }else {
+            return warehouse.addProduct(product);
+        }
+    }
+
+    public List<Product> getProducts() {
+        return List.of(warehouse.getProducts()).stream().toList();
+    }
+
+    public Optional<Product> getProductById(UUID id) {
+        return List.of(warehouse.getProducts()).stream().filter(f -> f.id.equals(id)).findFirst();
+    }
+
+    public void updateProductPrice(UUID id, BigDecimal price) {
+        this.warehouse.getProductById(id).stream().findFirst().ifPresent(product -> product.price = price);
+    }
+
+    public List<Perishable> expiredProducts(){
+        return warehouse.expiredProducts();
+    }
+
+    public List<Shippable> shippableProducts() {
+        return warehouse.shippableProducts();
+    }
+
+    public void remove(UUID id) {
+        var items = new java.util.ArrayList<>(getProductById(id).stream().toList());
+        items.removeIf(product -> product.id == id);
+    }
+
+
+    public void clearProducts() {
+        warehouse.clearProducts();
     }
 }
 
