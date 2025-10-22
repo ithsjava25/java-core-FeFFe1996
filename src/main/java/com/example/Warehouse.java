@@ -32,16 +32,20 @@ public class Warehouse {
     }
 
     public Optional<Product> getProductById(UUID id) {
-        var findProduct =  warehouse.getProducts().stream().filter(p -> p.uuid().equals(id));
-        if(!findProduct.isParallel()){
+        var findProduct =  products.stream().filter(f -> f.id == id).findFirst();
+        if(findProduct.isEmpty()) {
             return Optional.empty();
         }
-        return Optional.of((Product) findProduct);
+        return findProduct;
     }
 
     public void updateProductPrice(UUID id, BigDecimal price) {
-        warehouse.getProductById(id).stream().filter(f -> f.id.equals(id)).findFirst().ifPresent(product -> product.price = price);
+        try {
+            products.stream().filter(d -> d.id.equals(id)).findFirst().ifPresent(product -> product.price(price));
 
+        } catch (Exception e) {
+            throw new NoSuchElementException(e);
+        }
     }
 
     public List<Perishable> expiredProducts(){
@@ -49,12 +53,12 @@ public class Warehouse {
     }
 
     public List<Shippable> shippableProducts() {
-        return List.of();
+        List<Shippable> shippableProducts = new ArrayList<>();
+        return List.of((Shippable) products);
     }
 
     public void remove(UUID id) {
-        var items = new java.util.ArrayList<>(getProductById(id).stream().toList());
-        items.removeIf(product -> product.id == id);
+        warehouse.getProductById(id).stream().findFirst().ifPresent(products::remove);
     }
 
 
