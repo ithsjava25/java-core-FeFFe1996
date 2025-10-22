@@ -9,9 +9,8 @@ import java.util.stream.Collectors;
 
 public class Warehouse {
     private static Warehouse warehouse = new Warehouse();
+    private final List<Product> products = new ArrayList<>();
     private Warehouse() {}
-    private static Map<String, Warehouse> prodCache = new ConcurrentHashMap<>();
-
 
     public static Warehouse getInstance(String name) {
         if (warehouse == null) {
@@ -20,37 +19,37 @@ public class Warehouse {
         return warehouse; //todo fix singleton instance
     }
 
-    public Product addProduct(Product product) {
+    public void addProduct(Product product) {
         if (product == null) {
             throw new IllegalArgumentException("Product cannot be null.");
         }else {
-            return warehouse.addProduct(product);
+            products.add(product);
         }
     }
 
     public List<Product> getProducts() {
-        return List.of(); //todo fix getproducts
+        return products;
     }
 
     public Optional<Product> getProductById(UUID id) {
-        //return List.of(warehouse.getProducts()).stream().filter(f -> f.id.equals(id)).findFirst(); //todo id not working?
-        var findProduct =  warehouse.getProducts().stream().anyMatch(f -> f.id.equals(id));
-        if(!findProduct){
+        var findProduct =  warehouse.getProducts().stream().filter(p -> p.uuid().equals(id));
+        if(!findProduct.isParallel()){
             return Optional.empty();
         }
-        return Optional.of((Product) warehouse.getProducts().stream().filter(f -> f.id.equals(id)));
+        return Optional.of((Product) findProduct);
     }
 
     public void updateProductPrice(UUID id, BigDecimal price) {
-        warehouse.getProductById(id).stream().findFirst().ifPresent(product -> product.price = price);
+        warehouse.getProductById(id).stream().filter(f -> f.id.equals(id)).findFirst().ifPresent(product -> product.price = price);
+
     }
 
     public List<Perishable> expiredProducts(){
-        return warehouse.expiredProducts();
+        return List.of();
     }
 
     public List<Shippable> shippableProducts() {
-        return warehouse.shippableProducts();
+        return List.of();
     }
 
     public void remove(UUID id) {
@@ -67,10 +66,8 @@ public class Warehouse {
         return warehouse.getProducts().stream().collect(Collectors.groupingBy(Product::category));
     }
 
-
     public boolean isEmpty() {
-        warehouse = new Warehouse();
-        return warehouse.isEmpty();
+        return products.isEmpty();
     }
 }
 
