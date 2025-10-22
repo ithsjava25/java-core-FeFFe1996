@@ -4,18 +4,20 @@ import java.math.BigDecimal;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class Warehouse {
     private static Warehouse warehouse = new Warehouse();
     private Warehouse() {}
-    private static Map<String, Product> prodCache = new HashMap<String, Product>();
+    private static Map<String, Warehouse> prodCache = new ConcurrentHashMap<>();
+
 
     public static Warehouse getInstance(String name) {
         if (warehouse == null) {
             warehouse = new Warehouse();
         }
-        return warehouse = new Warehouse(); //todo fix singleton instance
+        return warehouse; //todo fix singleton instance
     }
 
     public Product addProduct(Product product) {
@@ -73,9 +75,16 @@ public class Warehouse {
 }
 
 class Category{
+    private static final Map<String, Category> cache = new ConcurrentHashMap<>(); //Cache/FlyWeight implementation in category
     private String name;
-
     private Category(String name) {
+            this.name = name.substring(0, 1).toUpperCase() + name.substring(1);
+    }
+    public String getName() {
+        return name;
+    }
+
+    public static Category of(String name) {
         if(name == null) {
             throw new IllegalArgumentException("Category name can't be null");
         }else if (name.isEmpty()){
@@ -83,16 +92,9 @@ class Category{
         } else if (name.isBlank()) {
             throw new IllegalArgumentException("Category name can't be blank");
         }else{
-            this.name = name.substring(0, 1).toUpperCase() + name.substring(1);
+        String normName = name.substring(0, 1).toUpperCase() + name.substring(1);
+        return cache.computeIfAbsent(normName,Category::new);
         }
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public static Category of(String name) {
-        return new Category(name);
     }
 }
 
