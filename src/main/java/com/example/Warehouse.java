@@ -3,39 +3,44 @@ package com.example;
 import java.math.BigDecimal;
 
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class Warehouse {
     private static Warehouse warehouse = new Warehouse();
     private Warehouse() {}
+    private static Map<String, Product> prodCache = new HashMap<String, Product>();
 
     public static Warehouse getInstance(String name) {
         if (warehouse == null) {
             warehouse = new Warehouse();
         }
-        return warehouse = new Warehouse(name);
+        return warehouse = new Warehouse(); //todo fix singleton instance
     }
 
     public Product addProduct(Product product) {
         if (product == null) {
-            throw new NullPointerException("Product cannot be null");
+            throw new IllegalArgumentException("Product cannot be null.");
         }else {
             return warehouse.addProduct(product);
         }
     }
 
     public List<Product> getProducts() {
-        return List.of(warehouse.getProducts()).stream().toList();
+        return List.of(); //todo fix getproducts
     }
 
     public Optional<Product> getProductById(UUID id) {
-        return List.of(warehouse.getProducts()).stream().filter(f -> f.id.equals(id)).findFirst();
+        //return List.of(warehouse.getProducts()).stream().filter(f -> f.id.equals(id)).findFirst(); //todo id not working?
+        var findProduct =  warehouse.getProducts().stream().anyMatch(f -> f.id.equals(id));
+        if(!findProduct){
+            return Optional.empty();
+        }
+        return Optional.of((Product) warehouse.getProducts().stream().filter(f -> f.id.equals(id)));
     }
 
     public void updateProductPrice(UUID id, BigDecimal price) {
-        this.warehouse.getProductById(id).stream().findFirst().ifPresent(product -> product.price = price);
+        warehouse.getProductById(id).stream().findFirst().ifPresent(product -> product.price = price);
     }
 
     public List<Perishable> expiredProducts(){
@@ -53,7 +58,17 @@ public class Warehouse {
 
 
     public void clearProducts() {
-        warehouse.clearProducts();
+        warehouse = new Warehouse();
+    }
+
+    public Map<Category, List<Product>> getProductsGroupedByCategories() {
+        return warehouse.getProducts().stream().collect(Collectors.groupingBy(Product::category));
+    }
+
+
+    public boolean isEmpty() {
+        warehouse = new Warehouse();
+        return warehouse.isEmpty();
     }
 }
 
@@ -63,9 +78,9 @@ class Category{
     private Category(String name) {
         if(name == null) {
             throw new IllegalArgumentException("Category name can't be null");
-        }else if (name == ""){
-            throw new IllegalArgumentException("Category name can't be empty");
-        } else if (name == " ") {
+        }else if (name.isEmpty()){
+            throw new IllegalArgumentException("Category name can't be blank");
+        } else if (name.isBlank()) {
             throw new IllegalArgumentException("Category name can't be blank");
         }else{
             this.name = name.substring(0, 1).toUpperCase() + name.substring(1);
@@ -103,12 +118,12 @@ class ElectronicsProduct extends Product implements Shippable{
 
 
     @Override
-    public double calculateShippingCost() {
+    public BigDecimal calculateShippingCost() {
         if(weight.doubleValue() > 5.0){
-            return weight.doubleValue() * (79+49);
+            return BigDecimal.valueOf(weight.doubleValue() * (79+49));
         }
         else {
-            return weight.doubleValue() * 79;
+            return BigDecimal.valueOf(weight.doubleValue() * 79);
         }
     }
 
@@ -135,8 +150,8 @@ class FoodProduct extends Product implements Perishable, Shippable{
     }
 
     @Override
-    public double calculateShippingCost() {
-        return weight.doubleValue() * 50;
+    public BigDecimal calculateShippingCost() {
+        return BigDecimal.valueOf(weight.doubleValue() * 50);
     }
 
     @Override
