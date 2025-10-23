@@ -40,19 +40,25 @@ public class Warehouse {
     }
 
     public void updateProductPrice(UUID id, BigDecimal price) {
-        try {
+        boolean found = products.stream().anyMatch(f -> f.id == id);
+        if (found) {
             products.stream()
                     .filter(d -> d.id.equals(id))
                     .findFirst()
                     .ifPresent(product -> product.price(price));
-        } catch (Exception e) {
-            throw new NoSuchElementException(e);
+        }
+        else {
+            throw new NoSuchElementException("Product not found with id:" + id);
         }
     }
 
     public List<Perishable> expiredProducts(){
-        Map<Category, List<Product>> perList = products.stream().collect(Collectors.groupingBy(Product::category));
-        return List.of();
+        return products.stream()
+                .filter(p -> p instanceof Perishable)
+                .filter(p -> ((Perishable) p).isExpired())
+                .map(product -> (Perishable) product)
+                .toList();
+
     }
 
     public List<Shippable> shippableProducts() {
@@ -73,7 +79,7 @@ public class Warehouse {
     }
 
     public Map<Category, List<Product>> getProductsGroupedByCategories() {
-        return warehouse.getProducts().stream().collect(Collectors.groupingBy(Product::category));
+        return warehouse.getProducts().stream().collect(Collectors.groupingBy(p -> p.category));
     }
 
     public boolean isEmpty() {
@@ -170,11 +176,12 @@ class FoodProduct extends Product implements Perishable, Shippable{
 
     @Override
     public LocalDate expirationDate() {
-        return isExpired();
+        LocalDate now = LocalDate.now();
+        return now.isAfter(expiryDate) ? expiryDate : now;
     }
 
     @Override
-    public LocalDate isExpired() {
+    public boolean isExpired() {
         return Perishable.super.isExpired();
     }
 
