@@ -28,7 +28,7 @@ public class Warehouse {
     }
 
     public List<Product> getProducts() {
-        return products;
+        return Collections.unmodifiableList(products);
     }
 
     public Optional<Product> getProductById(UUID id) {
@@ -41,24 +41,30 @@ public class Warehouse {
 
     public void updateProductPrice(UUID id, BigDecimal price) {
         try {
-            products.stream().filter(d -> d.id.equals(id)).findFirst().ifPresent(product -> product.price(price));
-
+            products.stream()
+                    .filter(d -> d.id.equals(id))
+                    .findFirst()
+                    .ifPresent(product -> product.price(price));
         } catch (Exception e) {
             throw new NoSuchElementException(e);
         }
     }
 
     public List<Perishable> expiredProducts(){
+        Map<Category, List<Product>> perList = products.stream().collect(Collectors.groupingBy(Product::category));
         return List.of();
     }
 
     public List<Shippable> shippableProducts() {
-        List<Shippable> shippableProducts = new ArrayList<>();
-        return List.of((Shippable) products);
+        return products.stream().filter( p -> p instanceof Shippable)
+                .map(p -> (Shippable) p)
+                .collect(Collectors.toList());
     }
 
     public void remove(UUID id) {
-        warehouse.getProductById(id).stream().findFirst().ifPresent(products::remove);
+        warehouse.getProductById(id).stream()
+                .findFirst()
+                .ifPresent(products::remove);
     }
 
 
@@ -123,10 +129,10 @@ class ElectronicsProduct extends Product implements Shippable{
     @Override
     public BigDecimal calculateShippingCost() {
         if(weight.doubleValue() > 5.0){
-            return BigDecimal.valueOf(weight.doubleValue() * (79+49));
+            return BigDecimal.valueOf((79+49));
         }
         else {
-            return BigDecimal.valueOf(weight.doubleValue() * 79);
+            return BigDecimal.valueOf(49);
         }
     }
 
