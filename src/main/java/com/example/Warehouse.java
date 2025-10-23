@@ -22,7 +22,10 @@ public class Warehouse {
     public void addProduct(Product product) {
         if (product == null) {
             throw new IllegalArgumentException("Product cannot be null.");
-        }else {
+        }else if (products.contains(product)) {
+            throw new IllegalArgumentException("Product already exists.");
+        }
+        else {
             products.add(product);
         }
     }
@@ -68,9 +71,7 @@ public class Warehouse {
     }
 
     public void remove(UUID id) {
-        warehouse.getProductById(id).stream()
-                .findFirst()
-                .ifPresent(products::remove);
+        products.removeIf(p -> p.id.equals(id));
     }
 
 
@@ -79,7 +80,7 @@ public class Warehouse {
     }
 
     public Map<Category, List<Product>> getProductsGroupedByCategories() {
-        return warehouse.getProducts().stream().collect(Collectors.groupingBy(p -> p.category));
+        return products.stream().collect(Collectors.groupingBy(p -> p.category));
     }
 
     public boolean isEmpty() {
