@@ -20,14 +20,13 @@ public class Warehouse {
     }
 
     public void addProduct(Product product) {
-        if (product == null) {
-            throw new IllegalArgumentException("Product cannot be null.");
-        }else if (products.contains(product)) {
-            throw new IllegalArgumentException("Product already exists.");
-        }
-        else {
+            if (product == null) {
+                throw new IllegalArgumentException("Product cannot be null.");
+            }
+            if (products.stream().anyMatch(p -> p.id.equals(product.id))) {
+                throw new IllegalArgumentException("Product with that id already exists, use updateProduct for updates.");
+            }
             products.add(product);
-        }
     }
 
     public List<Product> getProducts() {
