@@ -16,7 +16,7 @@ public class Warehouse {
         if (warehouse == null) {
             warehouse = new Warehouse();
         }
-        return warehouse; //todo fix singleton instance
+        return warehouse;
     }
 
     public void addProduct(Product product) {
@@ -34,11 +34,7 @@ public class Warehouse {
     }
 
     public Optional<Product> getProductById(UUID id) {
-        var findProduct =  products.stream().filter(f -> f.id == id).findFirst();
-        if(findProduct.isEmpty()) {
-            return Optional.empty();
-        }
-        return findProduct;
+        return products.stream().filter(f -> f.id == id).findFirst();
     }
 
     public void updateProductPrice(UUID id, BigDecimal price) {
@@ -73,7 +69,6 @@ public class Warehouse {
         products.removeIf(p -> p.id.equals(id));
     }
 
-
     public void clearProducts() {
         warehouse = new Warehouse();
     }
@@ -89,7 +84,8 @@ public class Warehouse {
 
 class Category{
     private static final Map<String, Category> cache = new ConcurrentHashMap<>(); //Cache/FlyWeight implementation in category
-    private String name;
+    private final String name;
+
     private Category(String name) {
             this.name = name.substring(0, 1).toUpperCase() + name.substring(1);
     }
@@ -112,8 +108,8 @@ class Category{
 }
 
 class ElectronicsProduct extends Product implements Shippable{
-    private int warrantyMonths;
-    private BigDecimal weight;
+    private final int warrantyMonths;
+    private final BigDecimal weight;
 
     public ElectronicsProduct(UUID uuid, String name, Category category, BigDecimal price, int warrantyMonths, BigDecimal weight) {
         super(uuid, name, category, price);
@@ -130,7 +126,6 @@ class ElectronicsProduct extends Product implements Shippable{
     public String productDetails() {
         return "Electronics: "+ name + ", Warranty: "+warrantyMonths + " months";
     }
-
 
     @Override
     public BigDecimal calculateShippingCost() {
